@@ -1,55 +1,40 @@
 const express = require("express");
-const res = require("express/lib/response");
 const { User } = require("../user");
 const router = new express.Router();
 
-// router.get("/", (req, res) => {
-//   document.location.href = "./fakebook.html";
-//   res.end("");
-// });
-
 // user signup
-
 router.post("/user", async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
-    res.status(201).send({ user });
+    const token = user.generateAuthToken();
+    res.status(201).send({ user, token });
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: e.message });
   }
 });
 
-//user Login
+// user login
 router.post("/user/login", async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-      res.send("invalid Cred");
-    } else {
-      const users = await User.findOne({ password: req.body.password });
-      if (!users) {
-        res.send("invalid Cred");
-      } else {
-        console.log(user);
-        res.send({ user });
-      }
-    }
+    const user = await User.findByCred(req.body.email, req.body.password);
+    const token = user.generateAuthToken();
+    res.send({ user, token });
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Invalid credentials" });
   }
 });
 
 // user profile
 router.get("/user", async (req, res) => {
   try {
-    const user = await User.find({});
-    if (!user) {
-      res.send("No user found");
+    const users = await User.find({});
+    if (!users.length) {
+      return res.send("No user found");
     }
-    res.send(user);
+    res.send(users);
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send({ error: e.message });
   }
 });
 

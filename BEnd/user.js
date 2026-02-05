@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const res = require("express/lib/response");
+
+const JWT_SECRET = process.env.JWT_SECRET || "fakebook-secret-key";
 
 const userSchema = new mongoose.Schema({
   Fname: {
@@ -41,7 +42,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    require: true,
+    required: true,
     minlength: 8,
     trim: true,
     validate(value) {
@@ -52,25 +53,37 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// userSchema.static.findByCred = async (email, password) => {
-//   const user = await User.findOne({ email });
-//   if (!user) {
-//     res.send("no user found");
-//   } else {
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       throw new Error("Wrong Credentials");
-//     }
-//     return user;
-//   }
-// };
+userSchema.statics.findByCred = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("No user found");
+  }
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Wrong Credentials");
+  }
+  return user;
+};
 
-// // pass hashing
-// userSchema.pre("save", async (next) => {
-//   if (this.isModified("password")) {
-//     this.password = await bcrypt.hash(this.password, 8);
-//   }
-// });
+userSchema.methods.generateAuthToken = function () {
+  const token = jwt.sign({ _id: this._id.toString() }, JWT_SECRET);
+  return token;
+};
+
+// Exclude password from JSON responses
+userSchema.methods.toJSON = function () {
+  const userObject = this.toObject();
+  delete userObject.password;
+  return userObject;
+};
+
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 8);
+  }
+  next();
+});
 
 const User = mongoose.model("User", userSchema);
 

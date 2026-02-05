@@ -1,12 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const User = require("./routers/user");
 
-mongoose.connect("mongodb://127.0.0.1:27017/fakebook");
+const mongoURL = process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/fakebook";
+
+mongoose.connect(mongoURL);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 app.use(User);
 
