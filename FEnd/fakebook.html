@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>LOgin</title>
+    <title>Login</title>
 
     <link rel="stylesheet" href="fakebook.css" />
     <link
@@ -21,10 +21,6 @@
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
-
-    <script src="./signup.js">
-      document.getElementById("lastlog").innerHTML = "Shrey Dhiman";
-    </script>
   </head>
   <body>
     <!--Start of main Div-->
@@ -67,33 +63,34 @@
           <div>
             <!--Emailid input box -->
             <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label"></label>
+              <label for="loginEmail" class="form-label"></label>
               <input
                 type="email"
                 class="form-control"
+                id="loginEmail"
                 placeholder="Enter your email or number"
               />
             </div>
             <!-- password input box -->
             <div class="mb-3">
-              <label for="exampleInputPassword1" class="form-label"></label>
+              <label for="loginPassword" class="form-label"></label>
               <input
                 type="password"
                 class="form-control"
-                id="exampleInputPassword1"
+                id="loginPassword"
                 placeholder="Enter password"
               />
             </div>
 
             <div>
-              <button type="submit" class="btn btn-primary">LogIn</button>
+              <button type="button" class="btn btn-primary" onclick="Login()">LogIn</button>
             </div>
             <div>
               <a href="#">Forgotten Password?</a>
               <br />
               <a href="./signup.html">
                 <button
-                  type="submit"
+                  type="button"
                   class="btn btn-primary _42ft _4jy0 _6lti _4jy6 _4jy2 selected _51sy"
                 >
                   Create Account
@@ -107,5 +104,39 @@
       </div>
     </div>
     <!-- end of main div -->
+
+    <script>
+      const API_URL = "http://localhost:3000";
+
+      async function Login() {
+        var email = document.getElementById("loginEmail").value;
+        var password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+          alert("Please enter email and password");
+          return;
+        }
+
+        try {
+          const response = await fetch(API_URL + "/user/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            localStorage.setItem("token", data.token);
+            alert("Login successful! Welcome back, " + data.user.Fname + "!");
+          } else {
+            alert("Login failed: " + (data.error || "Invalid credentials"));
+          }
+        } catch (e) {
+          alert("Could not connect to server. Please try again later.");
+          console.error(e);
+        }
+      }
+    </script>
   </body>
 </html>
