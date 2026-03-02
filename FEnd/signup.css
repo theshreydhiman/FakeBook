@@ -9,13 +9,22 @@ form {
   align-items: center;
   border: 1px dotted black;
   margin: auto;
-  margin-left: 35%;
-  margin-right: 35%;
+  margin-left: 20%;
+  margin-right: 20%;
   background-color: #1877f2;
   border-radius: 8%;
+  padding: 20px;
 }
 button {
   background-color: black;
   color: white;
   border-radius: 24%;
+}
+
+/* Added media query for responsive design */
+@media only screen and (max-width: 768px) {
+  form {
+    margin-left: 10%;
+    margin-right: 10%;
+  }
 }
